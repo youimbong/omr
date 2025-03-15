@@ -64,7 +64,13 @@ export default defineComponent({
       // 정답 표시 모드이고 사용자가 이 옵션을 선택했으나 오답인 경우
       const isWrong = props.showCorrectAnswers && isSelected && optionNumber !== correctAnswer;
       
-      const classes = ['rounded-full', 'w-8', 'h-8', 'flex', 'items-center', 'justify-center', 'border', 'cursor-pointer'];
+      // 기본 클래스
+      const classes = [
+        'rounded-full', 
+        'text-sm',
+        'border', 
+        'cursor-pointer'
+      ];
       
       if (isSelected) {
         classes.push('bg-blue-500', 'text-white', 'border-blue-500');
@@ -114,19 +120,22 @@ export default defineComponent({
       <div 
         v-for="question in questions" 
         :key="question.id"
-        class="flex items-center border rounded-md p-3"
+        class="flex items-center border rounded-md p-2 sm:p-3"
         :class="{ 
           'bg-green-50': showCorrectAnswers && isCorrectAnswer(question.id) === true,
           'bg-red-50': showCorrectAnswers && isCorrectAnswer(question.id) === false
         }"
       >
-        <div class="font-medium mr-2 w-7">{{ question.id }}.</div>
+        <!-- 문항 번호 - 고정 너비 -->
+        <div class="font-medium w-6 sm:w-7 text-center shrink-0">{{ question.id }}.</div>
         
-        <div class="flex space-x-2">
+        <!-- 선택 버튼 - 균등 분배 -->
+        <div class="flex-1 grid grid-cols-5 gap-1 sm:gap-2 mx-2 sm:mx-3">
           <button
             v-for="option in 5"
             :key="option"
             type="button"
+            class="w-full aspect-square flex items-center justify-center"
             :class="getOptionClass(question.id, option)"
             @click="!showCorrectAnswers && updateAnswer(question.id, option)"
             :disabled="showCorrectAnswers"
@@ -135,7 +144,8 @@ export default defineComponent({
           </button>
         </div>
         
-        <div v-if="showCorrectAnswers" class="ml-3 text-sm">
+        <!-- 정답 표시 - 고정 너비 -->
+        <div v-if="showCorrectAnswers" class="w-16 text-sm text-right shrink-0">
           <span v-if="isCorrectAnswer(question.id)" class="text-green-600">✓ 정답</span>
           <span v-else class="text-red-600">✗ 오답</span>
         </div>
@@ -159,5 +169,28 @@ button:disabled {
 
 .bg-red-50 {
   background-color: #fef2f2;
+}
+
+/* 버튼 호버 효과 */
+button:not(:disabled):hover {
+  transform: scale(1.05);
+  transition: transform 0.1s ease;
+}
+
+/* 버튼 활성화 효과 */
+button:not(:disabled):active {
+  transform: scale(0.95);
+}
+
+/* 정사각형 비율 유지 */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+/* 반응형 조정 */
+@media (max-width: 640px) {
+  .omr-card {
+    padding: 0.75rem;
+  }
 }
 </style>

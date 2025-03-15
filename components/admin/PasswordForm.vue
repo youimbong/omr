@@ -1,6 +1,5 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { useAuthStore } from '~/stores/auth';
 
 export default defineComponent({
   name: 'PasswordForm',
@@ -9,23 +8,32 @@ export default defineComponent({
     const password = ref('');
     const errorMessage = ref('');
     const isLoading = ref(false);
-    const authStore = useAuthStore();
+    const isBlocked = ref(false);
+    const remainingAttempts = ref<number | null>(null);
     
     const authenticate = async () => {
       isLoading.value = true;
       
       try {
-        const success = await authStore.checkPassword(password.value);
+        const response = await fetch('/api/admin/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: password.value })
+        });
         
-        if (success) {
+        const result = await response.json();
+        
+        if (result.success) {
           emit('authenticated');
           errorMessage.value = '';
+          remainingAttempts.value = null;
         } else {
-          errorMessage.value = authStore.error || '비밀번호가 일치하지 않습니다.';
+          errorMessage.value = result.message;
+          isBlocked.value = result.blocked || false;
+          remainingAttempts.value = result.remainingAttempts !== undefined ? result.remainingAttempts : null;
         }
-      } catch (error) {
-        errorMessage.value = '인증 과정에서 오류가 발생했습니다.';
-        console.error('인증 오류:', error);
+      } catch  {
+        errorMessage.value = '서버 연결 오류가 발생했습니다.';
       } finally {
         isLoading.value = false;
       }
@@ -35,6 +43,8 @@ export default defineComponent({
       password,
       errorMessage,
       isLoading,
+      isBlocked,
+      remainingAttempts,
       authenticate
     };
   }
@@ -45,7 +55,7 @@ export default defineComponent({
   <div class="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
     <h2 class="text-xl font-bold mb-4">관리자 인증</h2>
     
-    <form @submit.prevent="authenticate" class="space-y-4">
+    <form v-if="!isBlocked" @submit.prevent="authenticate" class="space-y-4">
       <div>
         <label for="password" class="block text-sm font-medium text-gray-700">비밀번호</label>
         <input
@@ -60,6 +70,9 @@ export default defineComponent({
       </div>
       
       <p v-if="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</p>
+      <p v-if="remainingAttempts !== null && remainingAttempts < 3" class="text-orange-500 text-sm">
+        주의: 남은 시도 횟수 {{ remainingAttempts }}회
+      </p>
       
       <div>
         <button
@@ -72,6 +85,11 @@ export default defineComponent({
         </button>
       </div>
     </form>
+    
+    <div v-else class="text-center">
+      <p class="text-red-500 mb-4">{{ errorMessage }}</p>
+      <p class="text-gray-600">잠시 후 다시 시도해주세요.</p>
+    </div>
   </div>
 </template>
 

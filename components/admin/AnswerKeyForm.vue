@@ -146,10 +146,10 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="bg-white p-6 rounded-lg shadow-md">
+  <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md">
     <h2 class="text-xl font-bold mb-4">{{ editMode ? '정답지 수정' : '새 정답지 작성' }}</h2>
     
-    <form @submit.prevent="saveAnswerKey" class="space-y-6">
+    <form @submit.prevent="saveAnswerKey" class="space-y-4 sm:space-y-6">
       <!-- 시험 제목 -->
       <div>
         <label for="title" class="block text-sm font-medium text-gray-700">시험 제목</label>
@@ -174,7 +174,7 @@ export default defineComponent({
             type="number"
             min="1"
             max="100"
-            class="mt-1 block w-32 px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            class="mt-1 block w-24 px-2 py-1 border border-gray-300 rounded-md shadow-sm"
             @change="updateQuestionsCount"
             :disabled="isSubmitting"
           >
@@ -183,26 +183,34 @@ export default defineComponent({
       </div>
       
       <!-- 정답 및 배점 입력 -->
-      <div class="border rounded-md p-4">
-        <h3 class="text-lg font-medium mb-4">정답 및 배점 입력</h3>
+      <div class="border rounded-md p-3 sm:p-4">
+        <h3 class="text-lg font-medium mb-2 sm:mb-4">정답 및 배점 입력</h3>
         
-        <!-- 한 줄에 한 문항씩 표시하는 레이아웃 -->
-        <div class="space-y-2">
+        <!-- 헤더 영역 - 배점 레이블을 여기에 한 번만 표시 -->
+        <div class="flex items-center px-2 py-1 mb-2 border-b">
+          <div class="w-8 text-center">번호</div>
+          <div class="flex-1 text-center">정답</div>
+          <div class="w-14 text-center text-xs text-gray-500">배점</div>
+        </div>
+        
+        <!-- 문항 목록 -->
+        <div class="space-y-1 sm:space-y-2 max-h-[60vh] overflow-y-auto pr-1">
           <div
             v-for="question in questions"
             :key="question.id"
-            class="flex items-center p-2 border rounded-md bg-gray-50"
+            class="flex items-center p-1 sm:p-2 border rounded-md bg-gray-50"
           >
-            <span class="font-medium w-8 text-center">{{ question.id }}.</span>
+            <!-- 문항 번호 -->
+            <span class="font-medium w-8 text-center text-sm">{{ question.id }}.</span>
             
-            <!-- OMR 스타일 정답 선택 버튼 - 한 줄로 배치 -->
+            <!-- OMR 스타일 정답 선택 버튼 - 더 컴팩트하게 -->
             <div class="flex-1">
-              <div class="flex justify-start space-x-2">
+              <div class="flex justify-center space-x-1">
                 <button
                   v-for="n in 5"
                   :key="n"
                   type="button"
-                  class="w-8 h-8 rounded-full flex items-center justify-center border"
+                  class="w-7 h-7 rounded-full flex items-center justify-center border text-sm"
                   :class="[
                     question.answerKey === n 
                       ? 'bg-blue-600 text-white border-blue-600' 
@@ -216,15 +224,15 @@ export default defineComponent({
               </div>
             </div>
             
-            <!-- 배점 입력 - 오른쪽에 배치 -->
-            <div class="flex items-center">
-              <label class="text-xs text-gray-500 mr-1">배점:</label>
+            <!-- 배점 입력 - 레이블 제거하고 입력 필드만 표시 -->
+            <div class="w-14">
               <input
                 v-model.number="question.points"
                 type="number"
                 min="1"
-                class="w-14 px-2 py-1 text-sm border border-gray-300 rounded-md"
+                class="w-full px-1 py-0.5 text-sm border border-gray-300 rounded-md text-center"
                 required
+                :disabled="isSubmitting"
               >
             </div>
           </div>
@@ -237,9 +245,9 @@ export default defineComponent({
       </div>
       
       <!-- 메시지 표시 -->
-      <div v-if="successMessage || errorMessage" class="mt-4">
-        <p v-if="successMessage" class="text-green-600">{{ successMessage }}</p>
-        <p v-if="errorMessage" class="text-red-600">{{ errorMessage }}</p>
+      <div v-if="successMessage || errorMessage" class="mt-2 sm:mt-4">
+        <p v-if="successMessage" class="text-green-600 text-sm">{{ successMessage }}</p>
+        <p v-if="errorMessage" class="text-red-600 text-sm">{{ errorMessage }}</p>
       </div>
       
       <!-- 제출 버튼 -->
@@ -249,7 +257,16 @@ export default defineComponent({
           class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
           :disabled="isSubmitting"
         >
-          {{ editMode ? '정답지 업데이트' : '정답지 저장' }}
+          <span v-if="isSubmitting">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            처리 중...
+          </span>
+          <span v-else>
+            {{ editMode ? '정답지 업데이트' : '정답지 저장' }}
+          </span>
         </button>
       </div>
     </form>
@@ -287,5 +304,24 @@ input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+/* 스크롤바 스타일 */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 20px;
 }
 </style>
