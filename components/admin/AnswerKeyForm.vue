@@ -173,7 +173,7 @@ export default defineComponent({
             v-model.number="questionsCount"
             type="number"
             min="1"
-            max="100"
+            max="200"
             class="mt-1 block w-24 px-2 py-1 border border-gray-300 rounded-md shadow-sm"
             @change="updateQuestionsCount"
             :disabled="isSubmitting"
