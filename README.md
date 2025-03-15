@@ -164,9 +164,9 @@ omr/
 
 ## 연락처
 
-프로젝트 관리자 - [이메일 주소](mailto:your.email@example.com)
+프로젝트 관리자 - [이메일 주소](mailto:you4164@gmail.com)
 
-프로젝트 링크: [https://github.com/yourusername/omr](https://github.com/yourusername/omr)
+프로젝트 링크: [https://github.com/yourusername/omr](https://github.com/youimbong/omr)
 
 ## 감사의 말
 
