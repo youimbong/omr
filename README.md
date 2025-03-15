@@ -48,6 +48,76 @@ yarn dev
 
 4. 웹 브라우저에서 http://localhost:3000 접속
 
+## PM2를 사용한 프로덕션 배포
+
+### 설치
+
+PM2를 전역으로 설치합니다:
+
+```bash
+npm install -g pm2
+# 또는
+yarn global add pm2
+# 또는
+pnpm add -g pm2
+```
+
+### 빌드
+
+애플리케이션을 빌드합니다:
+
+```bash
+npm run build
+# 또는
+yarn build
+# 또는
+pnpm build
+```
+
+### PM2로 실행
+
+PM2를 사용하여 애플리케이션을 실행합니다:
+
+```bash
+npm run pm2:start
+# 또는
+yarn pm2:start
+# 또는
+pnpm pm2:start
+```
+
+### 기타 PM2 명령어
+
+```bash
+# 애플리케이션 중지
+npm run pm2:stop
+
+# 애플리케이션 재시작
+npm run pm2:restart
+
+# 무중단 재시작 (코드 변경 시)
+npm run pm2:reload
+
+# 애플리케이션 삭제
+npm run pm2:delete
+
+# 로그 확인
+npm run pm2:logs
+
+# 모니터링
+npm run pm2:monit
+```
+
+### 환경 변수 설정
+
+관리자 비밀번호와 같은 환경 변수를 설정하려면 다음과 같이 실행합니다:
+
+```bash
+ADMIN_PASSWORD=your_secure_password pm2 start ecosystem.config.js
+```
+
+또는 `.env` 파일을 생성하여 환경 변수를 관리할 수 있습니다.
+
 ## 사용 방법
 
 ### 1. 관리자 페이지 (/admin)
