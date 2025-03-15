@@ -65,89 +65,85 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-2xl font-bold mb-6 text-center">시험 결과</h2>
+  <div class="result-view">
+    <h2 class="text-xl font-bold mb-4">시험 결과</h2>
     
-    <!-- 점수 요약 -->
-    <div class="mb-8 text-center">
-      <div class="text-4xl font-bold mb-2" :class="scoreColorClass">
-        {{ Math.round(scorePercentage * 10) / 10 }}점 / 100점 ({{ scoreGrade }})
-      </div>
-      <div class="text-gray-600">
-        {{ result.earnedPoints }}점 / {{ result.totalPoints }}점 만점
+    <!-- 요약 정보 -->
+    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="text-center p-3 bg-white rounded-md shadow-sm">
+          <p class="text-gray-500 text-sm">총 문항</p>
+          <p class="text-2xl font-bold">{{ result.totalQuestions }}문항</p>
+        </div>
+        
+        <div class="text-center p-3 bg-white rounded-md shadow-sm">
+          <p class="text-gray-500 text-sm">정답 개수</p>
+          <p class="text-2xl font-bold">{{ result.correctAnswers }}개</p>
+          <p class="text-sm text-gray-500">({{ Math.round(result.correctAnswers / result.totalQuestions * 100) }}%)</p>
+        </div>
+        
+        <div class="text-center p-3 bg-white rounded-md shadow-sm">
+          <p class="text-gray-500 text-sm">획득 점수</p>
+          <p class="text-2xl font-bold">{{ result.earnedPoints }}점</p>
+          <p class="text-sm text-gray-500">(총 {{ result.totalPoints }}점)</p>
+        </div>
       </div>
     </div>
     
-    <!-- 통계 -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-gray-50 p-4 rounded-lg text-center">
-        <div class="text-xl font-semibold">{{ result.correctAnswers }}개</div>
-        <div class="text-sm text-gray-600">정답 수</div>
-      </div>
-      
-      <div class="bg-gray-50 p-4 rounded-lg text-center">
-        <div class="text-xl font-semibold">{{ Math.round(correctRate * 10) / 10 }}%</div>
-        <div class="text-sm text-gray-600">정답률</div>
-      </div>
-      
-      <div class="bg-gray-50 p-4 rounded-lg text-center">
-        <div class="text-xl font-semibold">{{ result.answeredQuestions }}/{{ result.totalQuestions }}</div>
-        <div class="text-sm text-gray-600">답변율</div>
+    <!-- 문항별 결과 -->
+    <h3 class="text-lg font-semibold mb-3">문항별 결과</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div 
+        v-for="item in result.questionResults" 
+        :key="item.id"
+        class="flex items-center p-3 border rounded-md"
+        :class="item.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'"
+      >
+        <div class="w-8 font-medium">{{ item.id }}.</div>
+        
+        <div class="flex-1">
+          <div class="flex items-center">
+            <span class="mr-2">
+              <span v-if="item.isCorrect" class="text-green-600">✓</span>
+              <span v-else class="text-red-600">✗</span>
+            </span>
+            
+            <span>
+              내 답안: 
+              <strong>{{ item.userAnswer || '미응답' }}</strong>
+            </span>
+            
+            <span v-if="!item.isCorrect" class="ml-3 text-gray-600">
+              정답: <strong>{{ item.correctAnswer }}</strong>
+            </span>
+          </div>
+          
+          <div class="text-sm text-gray-500 mt-1">
+            배점: {{ item.points }}점
+          </div>
+        </div>
       </div>
     </div>
     
-    <!-- 피드백 메시지 -->
-    <div class="bg-blue-50 p-4 rounded-lg mb-6">
-      <p class="text-blue-800">{{ feedbackMessage }}</p>
-    </div>
-    
-    <!-- 문제별 결과 테이블 -->
-    <div class="overflow-x-auto">
-      <table class="min-w-full border-collapse">
-        <thead>
-          <tr class="bg-gray-100">
-            <th class="p-2 border text-left">문제</th>
-            <th class="p-2 border text-center">정답</th>
-            <th class="p-2 border text-center">내 답안</th>
-            <th class="p-2 border text-center">결과</th>
-            <th class="p-2 border text-right">점수</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr 
-            v-for="item in result.questionResults" 
-            :key="item.id" 
-            :class="{ 'bg-green-50': item.isCorrect, 'bg-red-50': !item.isCorrect }">
-            <td class="p-2 border">{{ item.id }}번</td>
-            <td class="p-2 border text-center">{{ item.correctAnswer }}</td>
-            <td class="p-2 border text-center">
-              {{ item.userAnswer !== null ? item.userAnswer : '-' }}
-            </td>
-            <td class="p-2 border text-center">
-              <span v-if="item.isCorrect" class="text-green-600">●</span>
-              <span v-else class="text-red-600">●</span>
-            </td>
-            <td class="p-2 border text-right">
-              {{ item.isCorrect ? item.points : 0 }} / {{ item.points }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- 날짜 및 시간 정보 (PDF 출력용) -->
+    <div class="mt-6 text-right text-sm text-gray-500">
+      출력일시: {{ new Date().toLocaleString() }}
     </div>
   </div>
 </template>
 
 <style scoped>
-.bg-white {
+.result-view {
   background-color: white;
 }
 
-.bg-gray-50 {
-  background-color: #f9fafb;
+.text-green-600 {
+  color: #059669;
 }
 
-.bg-blue-50 {
-  background-color: #eff6ff;
+.text-red-600 {
+  color: #dc2626;
 }
 
 .bg-green-50 {
@@ -158,23 +154,10 @@ export default defineComponent({
   background-color: #fef2f2;
 }
 
-.text-green-600 {
-  color: #059669;
-}
-
-.text-blue-600 {
-  color: #2563eb;
-}
-
-.text-yellow-600 {
-  color: #d97706;
-}
-
-.text-red-600 {
-  color: #dc2626;
-}
-
-.text-blue-800 {
-  color: #1e40af;
+/* PDF 출력 최적화 */
+@media print {
+  .result-view {
+    padding: 20px;
+  }
 }
 </style>

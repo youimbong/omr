@@ -30,6 +30,8 @@
     "@unhead/vue": "^2.0.0-rc.8",
     "dotenv": "^16.4.7",
     "eslint": "^9.0.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.0",
     "lowdb": "7.0.1",
     "nuxt": "^3.16.0",
     "pinia": "^3.0.1",

@@ -46,6 +46,9 @@ export default defineNuxtConfig({
   // 개발 서버 설정
   devServer: {
     port: 3000
+  },
+
+  build: {
+    transpile: ['jspdf', 'html2canvas']
   }
-  
 })

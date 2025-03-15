@@ -52,14 +52,21 @@ export default defineComponent({
       }));
     }
     
-    // 문제 수 변경 시 배열 업데이트
+    // 문제 수 변경 시 배열 업데이트 - 성능 최적화
     function updateQuestionsCount() {
       const currentLength = questions.value.length;
+      const newCount = questionsCount.value;
       
-      if (questionsCount.value > currentLength) {
-        // 문제 추가
+      // 너무 많은 문항을 한 번에 처리하지 않도록 제한
+      if (newCount > 200) {
+        questionsCount.value = 200;
+        return;
+      }
+      
+      if (newCount > currentLength) {
+        // 문제 추가 - 배치 처리로 성능 개선
         const newQuestions = Array.from(
-          { length: questionsCount.value - currentLength },
+          { length: newCount - currentLength },
           (_, i) => ({
             id: currentLength + i + 1,
             answerKey: 0,
@@ -67,13 +74,13 @@ export default defineComponent({
           })
         );
         questions.value = [...questions.value, ...newQuestions];
-      } else if (questionsCount.value < currentLength) {
+      } else if (newCount < currentLength) {
         // 문제 삭제
-        questions.value = questions.value.slice(0, questionsCount.value);
+        questions.value = questions.value.slice(0, newCount);
       }
     }
     
-    // 정답지 저장
+    // 정답지 저장 - 대용량 데이터 처리 최적화
     async function saveAnswerKey() {
       try {
         isSubmitting.value = true;
@@ -86,9 +93,35 @@ export default defineComponent({
           return;
         }
         
-        const invalidQuestions = questions.value.filter(q => q.answerKey < 1 || q.answerKey > 5);
+        // 대용량 데이터 처리를 위한 최적화 - 배치 처리
+        const invalidQuestions = [];
+        const batchSize = 50;
+        
+        for (let i = 0; i < questions.value.length; i += batchSize) {
+          const batch = questions.value.slice(i, i + batchSize);
+          const invalidBatch = batch.filter(q => q.answerKey < 1 || q.answerKey > 5);
+          invalidQuestions.push(...invalidBatch);
+          
+          // 비동기 작업 중 UI 응답성 유지를 위한 지연
+          if (i % (batchSize * 2) === 0 && i > 0) {
+            await new Promise(resolve => setTimeout(resolve, 0));
+          }
+        }
+        
         if (invalidQuestions.length > 0) {
-          errorMessage.value = `미입력된 정답이 있습니다. (문제 번호: ${invalidQuestions.map(q => q.id).join(', ')})`;
+          // 표시할 문항 번호가 너무 많은 경우 처리
+          const displayLimit = 10;
+          const invalidIds = invalidQuestions.map(q => q.id);
+          const displayIds = invalidIds.slice(0, displayLimit);
+          const remainingCount = invalidIds.length - displayLimit;
+          
+          let errorMsg = `미입력된 정답이 있습니다. (문제 번호: ${displayIds.join(', ')}`;
+          if (remainingCount > 0) {
+            errorMsg += ` 외 ${remainingCount}개`;
+          }
+          errorMsg += ')';
+          
+          errorMessage.value = errorMsg;
           return;
         }
         
@@ -183,8 +216,8 @@ export default defineComponent({
       </div>
       
       <!-- 정답 및 배점 입력 -->
-      <div class="border rounded-md p-3 sm:p-4">
-        <h3 class="text-lg font-medium mb-2 sm:mb-4">정답 및 배점 입력</h3>
+      <div class="border rounded-md p-4">
+        <h3 class="text-lg font-medium mb-4">정답 및 배점 입력</h3>
         
         <!-- 헤더 영역 - 배점 레이블을 여기에 한 번만 표시 -->
         <div class="flex items-center px-2 py-1 mb-2 border-b">
@@ -193,15 +226,15 @@ export default defineComponent({
           <div class="w-14 text-center text-xs text-gray-500">배점</div>
         </div>
         
-        <!-- 문항 목록 -->
+        <!-- 문항 목록 - 최대 높이 제한 및 스크롤 추가 -->
         <div class="space-y-1 sm:space-y-2 max-h-[60vh] overflow-y-auto pr-1">
           <div
             v-for="question in questions"
             :key="question.id"
             class="flex items-center p-1 sm:p-2 border rounded-md bg-gray-50"
           >
-            <!-- 문항 번호 -->
-            <span class="font-medium w-8 text-center text-sm">{{ question.id }}.</span>
+            <!-- 문항 번호 - 3자리 수 고려하여 너비 조정 -->
+            <span class="font-medium w-8 sm:w-10 text-center shrink-0">{{ question.id }}.</span>
             
             <!-- OMR 스타일 정답 선택 버튼 - 더 컴팩트하게 -->
             <div class="flex-1">
@@ -323,5 +356,12 @@ input::-webkit-inner-spin-button {
 .overflow-y-auto::-webkit-scrollbar-thumb {
   background-color: rgba(156, 163, 175, 0.5);
   border-radius: 20px;
+}
+
+/* 문항 수가 많을 때 성능 최적화 */
+@media (min-width: 768px) {
+  .grid-cols-5 {
+    will-change: transform;
+  }
 }
 </style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { defineComponent, ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useExamStore } from '~/stores/exam';
 import type { UserAnswer, ExamResult } from '~/types/exam';
@@ -23,6 +23,8 @@ export default defineComponent({
     const showResult = ref(false);
     const timeLeft = ref(0); // 시간 제한 (초 단위)
     const timer = ref<NodeJS.Timeout | null>(null);
+    const resultRef = ref<HTMLElement | null>(null);
+    const isGenerating = ref(false);
     
     // 시험 정보 로드
     const exam = computed(() => {
@@ -129,6 +131,48 @@ export default defineComponent({
       showResult.value = true;
     };
     
+    // 결과를 이미지로 저장
+    const saveAsImage = async () => {
+      if (!resultRef.value || !exam.value) return;
+      
+      try {
+        isGenerating.value = true;
+        
+        // 클라이언트 사이드에서만 실행
+        if (import.meta.client) {
+          const { default: html2canvas } = await import('html2canvas');
+          
+          // 결과 화면의 HTML 요소를 캡처
+          const element = resultRef.value;
+          const canvas = await html2canvas(element, {
+            scale: 2, // 해상도 향상
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            windowWidth: element.scrollWidth,
+            windowHeight: element.scrollHeight,
+            // 전체 내용이 캡처되도록 설정
+            height: element.scrollHeight,
+            width: element.scrollWidth,
+            // 스크롤 처리
+            scrollY: -window.scrollY,
+            scrollX: 0
+          });
+          
+          // 이미지 다운로드
+          const link = document.createElement('a');
+          link.download = `${exam.value.title}_결과_${new Date().toLocaleDateString().replace(/\./g, '-')}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }
+      } catch (error) {
+        console.error('이미지 생성 오류:', error);
+        alert('이미지 생성 중 오류가 발생했습니다.');
+      } finally {
+        isGenerating.value = false;
+      }
+    };
+    
     // 다시 풀기
     const retakeExam = () => {
       initializeExam();
@@ -163,9 +207,12 @@ export default defineComponent({
       formattedTimeLeft,
       showResult,
       examResult,
+      resultRef,
+      isGenerating,
       submitExam,
       retakeExam,
-      goToHome
+      goToHome,
+      saveAsImage
     };
   }
 });
@@ -213,14 +260,36 @@ export default defineComponent({
       
       <div v-else>
         <!-- 결과 화면 -->
-        <ResultView v-if="examResult" :result="examResult" />
+        <div ref="resultRef" class="bg-white p-6 rounded-lg shadow-md">
+          <ResultView v-if="examResult" :result="examResult" />
+          
+          <!-- 날짜 및 시간 정보 (이미지 출력용) -->
+          <div class="mt-4 text-right text-sm text-gray-500">
+            출력일시: {{ new Date().toLocaleString() }}
+          </div>
+        </div>
         
-        <div class="mt-6 flex justify-center space-x-4">
+        <div class="mt-6 flex flex-wrap justify-center gap-4">
           <button
             class="px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 font-semibold"
             @click="retakeExam"
           >
             다시 풀기
+          </button>
+          
+          <button
+            class="px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 font-semibold"
+            @click="saveAsImage"
+            :disabled="isGenerating"
+          >
+            <span v-if="isGenerating">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 inline-block text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              이미지 생성 중...
+            </span>
+            <span v-else>이미지로 저장</span>
           </button>
           
           <button
