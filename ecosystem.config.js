@@ -3,7 +3,7 @@ export default {
     {
       name: 'omr-app',
       exec_mode: 'cluster',
-      instances: 'max', // 또는 원하는 인스턴스 수
+      instances: '1', // 또는 원하는 인스턴스 수
       script: '.output/server/index.mjs',
       env: {
         PORT: process.env.PORT || 3000,
