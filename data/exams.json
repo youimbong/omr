@@ -1,0 +1,112 @@
+{
+  "exams": [
+    {
+      "id": "31767bf7-927a-42f6-a16c-dd44c6275563",
+      "title": "테스트",
+      "questions": [
+        {
+          "id": 1,
+          "answerKey": 2,
+          "points": 5
+        },
+        {
+          "id": 2,
+          "answerKey": 1,
+          "points": 5
+        },
+        {
+          "id": 3,
+          "answerKey": 3,
+          "points": 5
+        },
+        {
+          "id": 4,
+          "answerKey": 4,
+          "points": 5
+        },
+        {
+          "id": 5,
+          "answerKey": 2,
+          "points": 5
+        },
+        {
+          "id": 6,
+          "answerKey": 3,
+          "points": 5
+        },
+        {
+          "id": 7,
+          "answerKey": 3,
+          "points": 5
+        },
+        {
+          "id": 8,
+          "answerKey": 2,
+          "points": 5
+        },
+        {
+          "id": 9,
+          "answerKey": 2,
+          "points": 5
+        },
+        {
+          "id": 10,
+          "answerKey": 5,
+          "points": 5
+        },
+        {
+          "id": 11,
+          "answerKey": 4,
+          "points": 5
+        },
+        {
+          "id": 12,
+          "answerKey": 4,
+          "points": 5
+        },
+        {
+          "id": 13,
+          "answerKey": 3,
+          "points": 5
+        },
+        {
+          "id": 14,
+          "answerKey": 3,
+          "points": 5
+        },
+        {
+          "id": 15,
+          "answerKey": 2,
+          "points": 5
+        },
+        {
+          "id": 16,
+          "answerKey": 3,
+          "points": 5
+        },
+        {
+          "id": 17,
+          "answerKey": 3,
+          "points": 5
+        },
+        {
+          "id": 18,
+          "answerKey": 4,
+          "points": 5
+        },
+        {
+          "id": 19,
+          "answerKey": 3,
+          "points": 5
+        },
+        {
+          "id": 20,
+          "answerKey": 2,
+          "points": 5
+        }
+      ],
+      "createdAt": "2025-03-15T06:17:52.592Z",
+      "updatedAt": "2025-03-15T06:17:52.592Z"
+    }
+  ]
+}
