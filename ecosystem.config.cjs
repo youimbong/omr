@@ -8,7 +8,7 @@ module.exports = {
       instances: 1,
       script: './.output/server/index.mjs',
       env: {
-        PORT: process.env.PORT || 3001,
+        PORT: process.env.PORT || 3300,
         NODE_ENV: process.env.NODE_ENV || 'production',
         ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || '1234',
         DATA_PATH: process.env.DATA_PATH || './data'
